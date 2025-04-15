@@ -1,7 +1,6 @@
 package org.example.mikhaylovivan2semesterpart2.config;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -9,19 +8,19 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @Profile("!test")
 public class ScyllaConfig {
-  private CqlSession session;
 
   @Bean
   public CqlSession cqlSession() {
-    session = CqlSession.builder()
+    CqlSession session = CqlSession.builder()
         .addContactPoint(new java.net.InetSocketAddress("localhost", 9042))
         .withLocalDatacenter("datacenter1")
         .build();
+    
+    initializeSchema(session);
     return session;
   }
 
-  @PostConstruct
-  public void init() {
+  private void initializeSchema(CqlSession session) {
     session.execute("CREATE KEYSPACE IF NOT EXISTS user_audit " +
         "WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}");
 
