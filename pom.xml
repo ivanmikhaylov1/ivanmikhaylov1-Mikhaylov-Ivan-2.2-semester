@@ -45,8 +45,6 @@
             <artifactId>spring-webflux</artifactId>
             <version>6.1.14</version>
         </dependency>
-<<<<<<< HEAD
-=======
         <dependency>
             <groupId>com.datastax.oss</groupId>
             <artifactId>java-driver-core</artifactId>
@@ -85,7 +83,6 @@
             <version>2.1.1</version>
             <scope>test</scope>
         </dependency>
->>>>>>> 1ed9902 (hw6)
     </dependencies>
 
     <build>
