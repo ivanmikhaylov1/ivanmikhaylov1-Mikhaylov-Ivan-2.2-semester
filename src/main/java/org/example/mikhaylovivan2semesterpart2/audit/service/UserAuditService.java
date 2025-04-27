@@ -1,10 +1,11 @@
-package org.example.mikhaylovivan2semesterpart2.audit;
+package org.example.mikhaylovivan2semesterpart2.audit.service;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import org.example.mikhaylovivan2semesterpart2.audit.model.UserAudit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

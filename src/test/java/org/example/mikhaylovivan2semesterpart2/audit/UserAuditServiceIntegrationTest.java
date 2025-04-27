@@ -1,5 +1,7 @@
 package org.example.mikhaylovivan2semesterpart2.audit;
 
+import org.example.mikhaylovivan2semesterpart2.audit.model.UserAudit;
+import org.example.mikhaylovivan2semesterpart2.audit.service.UserAuditService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
