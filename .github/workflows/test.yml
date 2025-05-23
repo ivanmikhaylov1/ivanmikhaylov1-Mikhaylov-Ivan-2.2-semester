@@ -56,11 +56,11 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y curl python3 wget python3-pip
 
-          sudo pip3 install cqlsh
+          sudo pip3 install cqlsh==5.0.4
+          
+          cqlsh --version
 
-          echo "Waiting for Cassandra to be ready..."
           until cqlsh localhost 9042 -e "describe keyspaces" > /dev/null 2>&1; do
-            echo "Cassandra not ready yet..."
             sleep 5
           done
           
@@ -73,7 +73,6 @@ jobs:
           
           for i in {1..30}; do
             if kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1; then
-              echo "Kafka is ready!"
               break
             fi
             sleep 5
