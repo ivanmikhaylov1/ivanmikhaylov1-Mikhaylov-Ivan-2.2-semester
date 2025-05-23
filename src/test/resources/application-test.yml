@@ -1,10 +1,10 @@
 spring:
-  application:
-    name: Mikhaylov-Ivan-2.2-semester
+  main:
+    allow-bean-definition-overriding: true
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:${spring.embedded.kafka.broker-port}
     consumer:
-      group-id: audit-group
+      group-id: test-audit-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
@@ -16,6 +16,6 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    admin:
-      properties:
-        bootstrap.servers: localhost:9092
+  embedded:
+    kafka:
+      broker-port: 9092
