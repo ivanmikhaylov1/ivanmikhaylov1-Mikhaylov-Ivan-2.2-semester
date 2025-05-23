@@ -16,7 +16,7 @@ jobs:
         ports:
           - 9042:9042
         options: >-
-          --health-cmd "cqlsh -e 'describe keyspaces'"
+          --health-cmd "nodetool status"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -55,17 +55,10 @@ jobs:
       - name: Wait for Kafka and Cassandra to be ready
         run: |
           sudo apt-get update && sudo apt-get install -y curl python3 wget python3-pip
-
-          sudo pip3 install cqlsh==5.0.4
           
-          cqlsh --version
-
-          until cqlsh localhost 9042 -e "describe keyspaces" > /dev/null 2>&1; do
-            sleep 5
-          done
-          
-          cqlsh localhost 9042 -e "CREATE KEYSPACE IF NOT EXISTS user_audit WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};"
-          cqlsh localhost 9042 -e "CREATE TABLE IF NOT EXISTS user_audit.outbox (id uuid PRIMARY KEY, value text);"
+          sleep 30
+          docker exec scylla cqlsh -e "CREATE KEYSPACE IF NOT EXISTS user_audit WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};"
+          docker exec scylla cqlsh -e "CREATE TABLE IF NOT EXISTS user_audit.outbox (id uuid PRIMARY KEY, value text);"
           
           wget -q https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
           tar -xzf kafka_2.13-3.7.0.tgz
