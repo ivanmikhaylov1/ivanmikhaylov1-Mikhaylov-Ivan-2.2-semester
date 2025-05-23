@@ -2,20 +2,28 @@ spring:
   main:
     allow-bean-definition-overriding: true
   kafka:
-    bootstrap-servers: localhost:${spring.embedded.kafka.broker-port}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: test-audit-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring:
-          json:
-            trusted:
-              packages: org.example.mikhaylovivan2semesterpart2.audit
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-  embedded:
-    kafka:
-      broker-port: 9092
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    admin:
+      properties:
+        bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+        request.timeout.ms: 10000
+        default.api.timeout.ms: 10000
+
+outbox:
+  poll:
+    delay: 100
+
+logging:
+  level:
+    org.apache.kafka: WARN
+    com.datastax.oss.driver: WARN
+    org.springframework.kafka: WARN
+    org.example.mikhaylovivan2semesterpart2.outbox: DEBUG

@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Profile;
 public class ScyllaConfig {
 
   @Bean
+  @Profile("!test")
   public CqlSession cqlSession() {
     CqlSession session = CqlSession.builder()
         .addContactPoint(new java.net.InetSocketAddress("localhost", 9042))

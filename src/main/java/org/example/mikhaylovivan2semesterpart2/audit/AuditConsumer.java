@@ -12,12 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AuditConsumer {
-
   private final UserAuditRepository userAuditRepository;
 
   @KafkaListener(topics = KafkaConfig.AUDIT_TOPIC, groupId = "audit-group")
   public void consume(AuditMessage message) {
-    log.info("Received audit message: {}", message);
     userAuditRepository.save(message).subscribe(
         savedMessage -> log.info("Audit message saved: {}", savedMessage),
         error -> log.error("Error saving audit message", error)

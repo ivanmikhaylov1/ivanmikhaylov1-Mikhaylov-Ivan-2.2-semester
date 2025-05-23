@@ -2,7 +2,7 @@ spring:
   application:
     name: Mikhaylov-Ivan-2.2-semester
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: audit-group
       auto-offset-reset: earliest
@@ -14,8 +14,13 @@ spring:
             trusted:
               packages: org.example.mikhaylovivan2semesterpart2.audit
     producer:
+      bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     admin:
       properties:
         bootstrap.servers: localhost:9092
+
+outbox:
+  poll:
+    delay: 1000

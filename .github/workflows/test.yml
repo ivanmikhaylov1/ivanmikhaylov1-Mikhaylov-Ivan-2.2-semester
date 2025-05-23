@@ -32,7 +32,15 @@ jobs:
           KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
           KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
           KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
+          KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
           ALLOW_PLAINTEXT_LISTENER: yes
+        options: >-
+          --health-cmd "kafka-topics.sh --bootstrap-server localhost:9092 --list"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 10
+          --health-start-period 30s
 
     steps:
       - uses: actions/checkout@v3
@@ -44,10 +52,48 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Wait for Kafka and Cassandra to be ready
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl python3 wget python3-pip
+
+          sudo pip3 install cqlsh
+
+          echo "Waiting for Cassandra to be ready..."
+          until cqlsh localhost 9042 -e "describe keyspaces" > /dev/null 2>&1; do
+            echo "Cassandra not ready yet..."
+            sleep 5
+          done
+          
+          cqlsh localhost 9042 -e "CREATE KEYSPACE IF NOT EXISTS user_audit WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};"
+          cqlsh localhost 9042 -e "CREATE TABLE IF NOT EXISTS user_audit.outbox (id uuid PRIMARY KEY, value text);"
+          
+          wget -q https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
+          tar -xzf kafka_2.13-3.7.0.tgz
+          export PATH=$PATH:$(pwd)/kafka_2.13-3.7.0/bin
+          
+          for i in {1..30}; do
+            if kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1; then
+              echo "Kafka is ready!"
+              break
+            fi
+            sleep 5
+          done
+
       - name: Build with Maven
         run: mvn -B package --file pom.xml -DskipTests
 
-      - name: Run tests
+      - name: Run Outbox tests first
+        run: mvn test -Dtest=OutboxIntegrationTest
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          cassandra.host: localhost
+          cassandra.port: 9042
+
+      - name: Run all tests
         run: mvn test
         env:
           SPRING_PROFILES_ACTIVE: test
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          cassandra.host: localhost
+          cassandra.port: 9042
