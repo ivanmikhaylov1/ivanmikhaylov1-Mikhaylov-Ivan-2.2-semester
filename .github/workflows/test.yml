@@ -58,11 +58,8 @@ jobs:
           
           sleep 30
           
-          python3 -m pip install cassandra-driver==3.25.0
-          python3 -m pip install cqlsh==6.0.0
-          
-          python3 -m cqlsh localhost 9042 -e "CREATE KEYSPACE IF NOT EXISTS user_audit WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};"
-          python3 -m cqlsh localhost 9042 -e "CREATE TABLE IF NOT EXISTS user_audit.outbox (id uuid PRIMARY KEY, value text);"
+          sudo docker run --rm --network host scylladb/scylla:5.2.0 cqlsh localhost 9042 -e "CREATE KEYSPACE IF NOT EXISTS user_audit WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};"
+          sudo docker run --rm --network host scylladb/scylla:5.2.0 cqlsh localhost 9042 -e "CREATE TABLE IF NOT EXISTS user_audit.outbox (id uuid PRIMARY KEY, value text);"
           
           wget -q https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
           tar -xzf kafka_2.13-3.7.0.tgz
