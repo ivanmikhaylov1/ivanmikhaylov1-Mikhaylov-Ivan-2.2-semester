@@ -20,6 +20,10 @@ jobs:
           --health-interval 30s
           --health-timeout 10s
           --health-retries 10
+          --sysctl fs.aio-max-nr=1048576
+          --sysctl fs.aio-nr=1048576
+          --ulimit memlock=-1
+          --ulimit nofile=100000
 
     steps:
       - uses: actions/checkout@v3
@@ -60,3 +64,7 @@ jobs:
         run: mvn test
         env:
           SPRING_PROFILES_ACTIVE: test
+          SPRING_DATA_CASSANDRA_LOCAL_DATACENTER: datacenter1
+          SPRING_DATA_CASSANDRA_CONTACT_POINTS: localhost
+          SPRING_DATA_CASSANDRA_PORT: 9042
+          SPRING_DATA_CASSANDRA_KEYSPACE: user_audit
