@@ -62,7 +62,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip
+          sudo apt-get install -y python3-pip curl
           sudo pip3 install cqlsh
 
       - name: Wait for ScyllaDB to be ready and create schema
@@ -86,14 +86,10 @@ jobs:
 
       - name: Wait for Kafka to be ready
         run: |
-          wget -q https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
-          tar -xzf kafka_2.13-3.7.0.tgz
-          export PATH=$PATH:$(pwd)/kafka_2.13-3.7.0/bin
-          
           max_attempts=30
           attempt=0
           while [ $attempt -lt $max_attempts ]; do
-            if kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1; then
+            if curl -s localhost:9092 > /dev/null; then
               break
             fi
             attempt=$((attempt+1))
