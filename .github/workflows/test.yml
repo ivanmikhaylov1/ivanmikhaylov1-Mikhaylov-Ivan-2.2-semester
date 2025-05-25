@@ -28,6 +28,27 @@ jobs:
           SCYLLA_MEMORY: "750M"
           SCYLLA_OVERPROVISIONED: "1"
 
+      kafka:
+        image: bitnami/kafka:latest
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_CFG_NODE_ID: 0
+          KAFKA_CFG_PROCESS_ROLES: controller,broker
+          KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+          KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
+          KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          ALLOW_PLAINTEXT_LISTENER: yes
+        options: >-
+          --health-cmd "kafka-topics.sh --bootstrap-server localhost:9092 --list"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 10
+          --health-start-period 30s
+
     steps:
       - uses: actions/checkout@v3
 
@@ -60,7 +81,26 @@ jobs:
           done
           
           if [ $attempt -eq $max_attempts ]; then
-            echo "Failed to connect to ScyllaDB after $max_attempts attempts"
+            exit 1
+          fi
+
+      - name: Wait for Kafka to be ready
+        run: |
+          wget -q https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
+          tar -xzf kafka_2.13-3.7.0.tgz
+          export PATH=$PATH:$(pwd)/kafka_2.13-3.7.0/bin
+          
+          max_attempts=30
+          attempt=0
+          while [ $attempt -lt $max_attempts ]; do
+            if kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1; then
+              break
+            fi
+            attempt=$((attempt+1))
+            sleep 10
+          done
+          
+          if [ $attempt -eq $max_attempts ]; then
             exit 1
           fi
 
@@ -76,3 +116,7 @@ jobs:
           SPRING_DATA_CASSANDRA_PORT: 9042
           SPRING_DATA_CASSANDRA_KEYSPACE: user_audit
           SPRING_DATA_CASSANDRA_SCHEMA_ACTION: CREATE_IF_NOT_EXISTS
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS: localhost:9092
+          SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS: localhost:9092
