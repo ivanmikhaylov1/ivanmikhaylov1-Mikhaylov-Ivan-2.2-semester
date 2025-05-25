@@ -20,10 +20,12 @@ jobs:
           --health-interval 30s
           --health-timeout 10s
           --health-retries 10
-          --sysctl fs.aio-max-nr=1048576
-          --sysctl fs.aio-nr=1048576
           --ulimit memlock=-1
           --ulimit nofile=100000
+          --developer-mode 1
+          --smp 1
+          --memory 750M
+          --overprovisioned 1
 
     steps:
       - uses: actions/checkout@v3
