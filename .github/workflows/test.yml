@@ -44,19 +44,23 @@ jobs:
           sudo apt-get install -y python3-pip
           sudo pip3 install cqlsh
 
-      - name: Wait for ScyllaDB to be ready
+      - name: Wait for ScyllaDB to be ready and create schema
         run: |
-          max_attempts=20
+          max_attempts=30
           attempt=0
           while [ $attempt -lt $max_attempts ]; do
             if cqlsh --connect-timeout=10 127.0.0.1 9042 -e "describe keyspaces" > /dev/null 2>&1; then
+              cqlsh 127.0.0.1 9042 -e "CREATE KEYSPACE IF NOT EXISTS user_audit WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};"
+              cqlsh 127.0.0.1 9042 -e "CREATE TABLE IF NOT EXISTS user_audit.outbox (id uuid PRIMARY KEY, value text);"
+              cqlsh 127.0.0.1 9042 -e "CREATE TABLE IF NOT EXISTS user_audit.audit_logs (id uuid PRIMARY KEY, user_id text, entity_id text, entity_type text, action text, timestamp timestamp, details text);"
               break
             fi
             attempt=$((attempt+1))
-            sleep 15
+            sleep 20
           done
           
           if [ $attempt -eq $max_attempts ]; then
+            echo "Failed to connect to ScyllaDB after $max_attempts attempts"
             exit 1
           fi
 
@@ -71,3 +75,4 @@ jobs:
           SPRING_DATA_CASSANDRA_CONTACT_POINTS: localhost
           SPRING_DATA_CASSANDRA_PORT: 9042
           SPRING_DATA_CASSANDRA_KEYSPACE: user_audit
+          SPRING_DATA_CASSANDRA_SCHEMA_ACTION: CREATE_IF_NOT_EXISTS
