@@ -1,6 +1,13 @@
 spring:
   application:
     name: Mikhaylov-Ivan-2.2-semester
+  data:
+    cassandra:
+      contact-points: localhost
+      port: 9042
+      local-datacenter: datacenter1
+      keyspace-name: user_audit
+      schema-action: CREATE_IF_NOT_EXISTS
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
@@ -24,3 +31,20 @@ spring:
 outbox:
   poll:
     delay: 1000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 50ms,100ms,200ms,500ms
+      percentiles:
+        http.server.requests: 0.5,0.9,0.95,0.99

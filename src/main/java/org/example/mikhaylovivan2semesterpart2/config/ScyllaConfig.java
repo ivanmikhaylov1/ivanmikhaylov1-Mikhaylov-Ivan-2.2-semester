@@ -21,7 +21,7 @@ public class ScyllaConfig {
         "WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}");
 
     session.execute("USE user_audit");
-    session.execute("CREATE TABLE IF NOT EXISTS user_audit (" +
+    session.execute("CREATE TABLE IF NOT EXISTS audit_events (" +
         "id UUID PRIMARY KEY," +
         "user_id TEXT," +
         "action TEXT," +
@@ -29,7 +29,7 @@ public class ScyllaConfig {
         "timestamp TIMESTAMP" +
         ") WITH default_time_to_live = 31536000");
 
-    session.execute("CREATE INDEX IF NOT EXISTS ON user_audit (user_id)");
+    session.execute("CREATE INDEX IF NOT EXISTS ON audit_events (user_id)");
 
     return session;
   }
