@@ -22,10 +22,11 @@ jobs:
           --health-retries 10
           --ulimit memlock=-1
           --ulimit nofile=100000
-          --developer-mode 1
-          --smp 1
-          --memory 750M
-          --overprovisioned 1
+        env:
+          SCYLLA_DEVELOPER_MODE: "1"
+          SCYLLA_SMP: "1"
+          SCYLLA_MEMORY: "750M"
+          SCYLLA_OVERPROVISIONED: "1"
 
     steps:
       - uses: actions/checkout@v3
