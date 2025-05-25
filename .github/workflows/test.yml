@@ -62,7 +62,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip curl
+          sudo apt-get install -y python3-pip kafka
           sudo pip3 install cqlsh
 
       - name: Wait for ScyllaDB to be ready and create schema
@@ -89,7 +89,7 @@ jobs:
           max_attempts=30
           attempt=0
           while [ $attempt -lt $max_attempts ]; do
-            if curl -s localhost:9092 > /dev/null; then
+            if kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1; then
               break
             fi
             attempt=$((attempt+1))
