@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       scylla:
         image: scylladb/scylla:5.2.0
@@ -20,7 +20,7 @@ jobs:
           --health-interval 30s
           --health-timeout 10s
           --health-retries 10
-    
+
     steps:
       - uses: actions/checkout@v3
 
@@ -31,7 +31,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Wait for Kafka and Cassandra to be ready
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          sudo pip3 install cqlsh
+
+      - name: Wait for ScyllaDB to be ready
         run: |
           max_attempts=20
           attempt=0
